@@ -31,13 +31,14 @@ export const site = {
   instagramUrl: "https://www.instagram.com/dra_stephaniedeoliveira/",
 
   /**
-   * ATENÇÃO — conferir com a Dra.: o Ident lista "Av. Dr. Afonso Vergueiro, 2553,
-   * Vila Augusta (Consultório Cois)" e o Doctoralia lista "R. Aníbal da Costa Dias,
-   * 442, Vila Lucy". Enquanto não houver confirmação, o site mostra apenas
-   * "Sorocaba – SP". Preencha `address` para exibir o endereço e o mapa.
+   * Endereço: página pública de auto-agendamento linkada na bio do Instagram dela (Capim).
+   * (O Ident e o Doctoralia listam outros endereços — confirmar com a Dra. se mudou.)
    */
-  address: "" as string,
-  mapsQuery: "" as string,
+  address: "Rua Aníbal Costa Dias, 34 — Vila Lucy" as string,
+  neighborhood: "Vila Lucy",
+  street: "Rua Aníbal Costa Dias, 34",
+  cep: "18043-020",
+  mapsQuery: "Rua Aníbal Costa Dias, 34, Vila Lucy, Sorocaba - SP, 18043-020" as string,
 
   /** E-mail para receber aviso de novos agendamentos (opcional). */
   notifyEmail: process.env.NOTIFY_EMAIL ?? "",
@@ -169,6 +170,10 @@ export const faq = [
   {
     q: "Como sei se sou candidato a implante, clareamento ou alinhadores?",
     a: "Isso depende de uma avaliação clínica, com exames quando necessário. Na primeira consulta analisamos a sua saúde bucal e explicamos as opções, prazos e cuidados de cada tratamento.",
+  },
+  {
+    q: "Onde fica o consultório?",
+    a: "Rua Aníbal Costa Dias, 34, Vila Lucy, Sorocaba – SP (CEP 18043-020). Você pode abrir a rota direto no mapa na seção de contato.",
   },
   {
     q: "Quais os dias e horários de atendimento?",

@@ -82,10 +82,10 @@ const DDL: string[] = [
 const SEED_SERVICES = [
   {
     slug: "avaliacao",
-    name: "Avaliação / primeira consulta",
+    name: "Avaliação e limpeza",
     description:
-      "Avaliação completa da sua saúde bucal, diagnóstico e plano de tratamento. O melhor ponto de partida.",
-    duration_min: 60,
+      "Primeira consulta: avaliação completa da saúde bucal, limpeza, diagnóstico e plano de tratamento. O melhor ponto de partida.",
+    duration_min: 30,
     icon: "search",
   },
   {

@@ -97,28 +97,53 @@ export default function Contact() {
           <RevealItem>
             <div className="pattern-geo relative h-full overflow-hidden rounded-[1.75rem] bg-navy-900 p-8 text-center text-ivory-50 shadow-[0_30px_70px_-40px_rgba(13,19,54,0.7)]">
               <div aria-hidden className="absolute -top-20 left-1/2 h-60 w-60 -translate-x-1/2 rounded-full bg-gold-400/15 blur-[80px]" />
-              <div className="relative">
+              <div className="relative flex h-full flex-col">
                 <Pin />
                 <h3 className="font-display text-[1.3rem] font-medium">Onde estamos</h3>
                 <p className="mt-3 font-display text-[1.66rem] font-medium italic leading-none text-gold-gradient">
                   {site.city} – {site.state}
                 </p>
                 {site.address ? (
-                  <p className="mt-5 text-[0.98rem] leading-relaxed text-ivory-200/80">{site.address}</p>
+                  <p className="mt-5 text-[0.98rem] leading-relaxed text-ivory-100/90">
+                    {site.street}
+                    <br />
+                    {site.neighborhood} · CEP {site.cep}
+                  </p>
                 ) : (
                   <p className="mx-auto mt-5 max-w-[16rem] text-[0.98rem] leading-relaxed text-ivory-200/75">
                     O endereço completo e como chegar são enviados na confirmação do seu agendamento.
                   </p>
                 )}
                 {site.mapsQuery && (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.mapsQuery)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-6 inline-block text-gold-300 underline underline-offset-4 hover:text-gold-200"
-                  >
-                    Abrir no mapa
-                  </a>
+                  <>
+                    <div className="mt-6 overflow-hidden rounded-2xl border border-gold-400/30 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.6)]">
+                      <iframe
+                        title={`Mapa: ${site.street}, ${site.city}`}
+                        src={`https://www.google.com/maps?q=${encodeURIComponent(site.mapsQuery)}&output=embed`}
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        className="block h-44 w-full border-0 [filter:grayscale(0.35)_contrast(1.05)]"
+                      />
+                    </div>
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[0.95rem]">
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(site.mapsQuery)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-gold-300 underline underline-offset-4 hover:text-gold-200"
+                      >
+                        Como chegar
+                      </a>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.mapsQuery)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-ivory-200/80 underline underline-offset-4 hover:text-gold-200"
+                      >
+                        Abrir no mapa
+                      </a>
+                    </div>
+                  </>
                 )}
               </div>
             </div>

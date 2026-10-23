@@ -37,7 +37,7 @@ function futureMonday(skip = 0): string {
 }
 
 const base = (over: Record<string, unknown> = {}) => ({
-  serviceId: "avaliacao", // 60 min
+  serviceId: "protese", // 60 min
   date: futureMonday(),
   time: "09:00",
   name: "Maria da Silva",

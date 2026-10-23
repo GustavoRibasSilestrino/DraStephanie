@@ -83,6 +83,26 @@ function NextSlotCard({ play }: { play: boolean }) {
 export default function Hero({ photos }: { photos: Photos }) {
   const ready = useSplashDone();
   const state = ready ? "show" : "hide";
+
+  // Rede de segurança: se alguma animação de entrada ainda estiver pendente 3 s depois
+  // (ex.: navegador sem quadros de animação em abas ocultas/sem foco), conclui à força
+  // para o herói nunca ficar "em branco".
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(() => {
+      for (const a of document.getAnimations()) {
+        try {
+          const timing = a.effect?.getTiming();
+          if (a.timeline === document.timeline && a.playState === "running" && timing && Number.isFinite(Number(timing.iterations))) {
+            a.finish();
+          }
+        } catch {
+          /* animação infinita ou já encerrada */
+        }
+      }
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [ready]);
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const yArt = useTransform(scrollYProgress, [0, 1], [0, 110]);

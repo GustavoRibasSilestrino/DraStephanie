@@ -68,8 +68,18 @@ export default function Footer() {
           <h3 className="mb-5 text-[0.72rem] font-medium uppercase tracking-[0.3em] text-gold-400">Atendimento</h3>
           <ul className="space-y-3 text-[0.98rem]">
             <li>
-              {site.city} – {site.state}
-              {site.address ? <span className="block text-ivory-200/60">{site.address}</span> : null}
+              {site.address ? (
+                <>
+                  {site.street}
+                  <span className="block text-ivory-200/60">
+                    {site.neighborhood} · {site.city} – {site.state} · CEP {site.cep}
+                  </span>
+                </>
+              ) : (
+                <>
+                  {site.city} – {site.state}
+                </>
+              )}
             </li>
             <li>Segunda a sexta · 8h às 12h e 13h30 às 17h30</li>
             <li className="text-ivory-200/60">Fins de semana sem atendimento</li>

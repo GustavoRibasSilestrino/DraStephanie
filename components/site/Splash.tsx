@@ -102,17 +102,22 @@ export default function Splash() {
   );
 }
 
-/** true quando a abertura terminou (ou não precisa acontecer). */
+/**
+ * true quando a abertura terminou (ou não precisa acontecer).
+ *
+ * Quando a abertura é pulada (visita repetida), a virada para true é adiada por
+ * um instante, para o herói não começar a animar no mesmo tick da hidratação.
+ */
 export function useSplashDone(): boolean {
   const [done, setDone] = useState(false);
   useEffect(() => {
-    if (
+    const skip =
       window.__splashDone ||
       document.documentElement.getAttribute("data-splash") === "skip" ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      setDone(true);
-      return;
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (skip) {
+      const t = setTimeout(() => setDone(true), 120);
+      return () => clearTimeout(t);
     }
     const on = () => setDone(true);
     window.addEventListener("splash-done", on);

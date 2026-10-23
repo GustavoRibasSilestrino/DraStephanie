@@ -30,7 +30,7 @@ const jsonLd = {
         addressLocality: site.city,
         addressRegion: site.state,
         addressCountry: "BR",
-        ...(site.address ? { streetAddress: site.address } : {}),
+        ...(site.address ? { streetAddress: site.street, postalCode: site.cep } : {}),
       },
       openingHoursSpecification: [
         {

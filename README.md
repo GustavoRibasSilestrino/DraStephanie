@@ -72,8 +72,9 @@ bloqueios são calculadas em `lib/availability.ts`.
 | Cores / fontes | `app/globals.css` (tokens do tema) e `app/layout.tsx` (Poppins) |
 
 ### Pendências para confirmar com a Dra. antes de publicar
-- **Endereço**: o Ident lista "Av. Dr. Afonso Vergueiro, 2553 — Vila Augusta (Consultório Cois)" e o Doctoralia lista
-  "R. Aníbal da Costa Dias, 442 — Vila Lucy". Preencher `address` em `lib/site.ts` para exibir.
+- **Endereço**: usado o da página pública de auto-agendamento (Capim) linkada na bio do Instagram dela —
+  "Rua Aníbal Costa Dias, 34, Vila Lucy, Sorocaba–SP, CEP 18043-020". O Ident e o Doctoralia listam outros
+  endereços; confirmar com a Dra. se mudou e ajustar em `lib/site.ts`.
 - **Convênios** (Amil Dental, Bradesco Dental, Interodonto, Odontoprev) vieram do perfil público do Ident.
 - **Título de "Especialista"**: o conselho (CRO-SP) exige registro da especialidade para divulgar o título.
 - **Durações dos serviços** são sugestões — ajustar em `/admin/servicos`.
