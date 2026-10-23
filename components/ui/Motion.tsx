@@ -176,7 +176,12 @@ export function Counter({
   useEffect(() => {
     if (!inView) return;
     const controls = animate(value, to, { duration, ease: EASE });
-    return () => controls.stop();
+    // garante o valor final mesmo se o navegador não gerar quadros de animação
+    const t = setTimeout(() => value.set(to), (duration + 1.2) * 1000);
+    return () => {
+      controls.stop();
+      clearTimeout(t);
+    };
   }, [inView, to, duration, value]);
 
   return (
