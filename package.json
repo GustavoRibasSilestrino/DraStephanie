@@ -1,0 +1,37 @@
+{
+  "name": "dra-stephanie",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "tsx --test tests/*.test.mts",
+    "db:demo": "tsx --env-file-if-exists=.env.local scripts/demo.ts",
+    "test:pg": "node scripts/test-pg.mjs"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.18.0",
+    "lucide-react": "^1.61.0",
+    "motion": "^14.6.0",
+    "next": "16.4.3",
+    "pg": "^8.23.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^20",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
+}
