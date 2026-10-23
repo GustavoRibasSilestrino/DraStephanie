@@ -11,7 +11,7 @@ export default function DemoBanner() {
       <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 py-2">
         <span aria-hidden className="text-gold-400">✦</span>
         <p>
-          <strong className="font-medium text-gold-300">Proposta de site</strong>
+          <strong className="font-medium text-gold-300">Proposta de site por DEV RIBAS</strong>
           <span className="hidden sm:inline">
             {" "}
             — protótipo de demonstração; os agendamentos feitos aqui são de teste

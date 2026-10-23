@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Butterfly, InstagramIcon, WhatsAppIcon } from "@/components/ui/Icons";
+import { DEMO } from "@/lib/demo";
 import { site, whatsappLink } from "@/lib/site";
 
 export default function Footer() {
@@ -101,6 +102,7 @@ export default function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-5 py-6 text-[0.82rem] text-ivory-200/55 sm:flex-row sm:px-8">
           <p>
             © {new Date().getFullYear()} {site.name} · Cirurgiã-Dentista · {site.cro}
+            {DEMO && <span className="ml-2 text-gold-400">· Proposta desenvolvida por DEV RIBAS</span>}
           </p>
           <p className="flex gap-5">
             <Link href="/privacidade" className="transition-colors hover:text-gold-300">

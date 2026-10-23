@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { DEMO } from "@/lib/demo";
 import { site } from "@/lib/site";
 
 export const alt = `${site.name} — Dentista em ${site.city}`;
@@ -43,7 +44,7 @@ export default function OpengraphImage() {
           Endodontia · Prótese · Implantes · Clareamento
         </div>
         <div style={{ position: "absolute", right: 90, bottom: 56, fontSize: 24, color: "#9aa0c9" }}>
-          {site.cro}
+          {DEMO ? `Proposta por DEV RIBAS · ${site.cro}` : site.cro}
         </div>
       </div>
     ),

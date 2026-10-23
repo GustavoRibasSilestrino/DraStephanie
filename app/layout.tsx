@@ -4,6 +4,7 @@ import "./globals.css";
 import { site } from "@/lib/site";
 import { DEMO } from "@/lib/demo";
 import Providers from "@/components/Providers";
+import Watermark from "@/components/Watermark";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-dvh overflow-x-hidden">
         <Providers>{children}</Providers>
+        <Watermark />
       </body>
     </html>
   );

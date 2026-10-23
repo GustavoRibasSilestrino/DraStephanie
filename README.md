@@ -48,6 +48,7 @@ npm run test:pg   # a mesma suíte contra um Postgres (PGlite, em WebAssembly)
 | `DATABASE_URL` | Postgres (Neon, Supabase, Vercel Postgres…). **É o caminho de produção.** |
 | `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` | Alternativa: Turso (SQLite na nuvem). |
 | `NEXT_PUBLIC_DEMO_MODE` | `true` (padrão) = faixa "proposta/demonstração", `noindex`, sem e-mails. `false` = site oficial. |
+| `DEMO_ACCESS_CODE` | Código de acesso da apresentação (só em modo demo). Sem o código, o site pede "Apresentação privada". |
 | `NEXT_PUBLIC_SITE_URL` | URL pública (SEO, links em e-mails). |
 | `RESEND_API_KEY`, `MAIL_FROM`, `NOTIFY_EMAIL` | Opcional: e-mail de confirmação ao paciente e aviso à Dra. |
 
@@ -81,6 +82,16 @@ bloqueios são calculadas em `lib/availability.ts`.
 - **Política de privacidade**: texto-modelo (LGPD); revisar antes de publicar.
 - Conteúdo odontológico segue as regras de publicidade do CFO: sem preços, sem "antes e depois", sem promessas.
 
+## Apresentação protegida (código de acesso + marca d'água)
+
+Em modo demo o site fica atrás de uma tela **"Apresentação privada"**: só abre com o código (`DEMO_ACCESS_CODE`),
+vale por 12 h no navegador e cobre também as APIs e o painel. Todas as páginas ganham a marca d'água **DEV RIBAS**,
+a faixa "Proposta de site por DEV RIBAS" e um crédito no rodapé.
+
+- Para revogar o acesso depois da reunião: troque `DEMO_ACCESS_CODE` na Vercel e refaça o deploy.
+- Localmente a trava só liga se `DEMO_ACCESS_CODE` estiver definido.
+- Tudo isso desaparece com `NEXT_PUBLIC_DEMO_MODE=false` (entrega).
+
 ## Modo demonstração → entrega
 
 Enquanto `NEXT_PUBLIC_DEMO_MODE` for `true`, o site se apresenta como proposta (faixa no topo, `noindex`,
@@ -88,7 +99,8 @@ Enquanto `NEXT_PUBLIC_DEMO_MODE` for `true`, o site se apresenta como proposta (
 **Restaurar dados de exemplo** (pacientes e consultas fictícios).
 
 Para entregar à Dra.: defina `NEXT_PUBLIC_DEMO_MODE=false`, troque `ADMIN_PASSWORD`, apague os dados de exemplo
-(`/admin` → *Remover exemplos*), configure o domínio e `NEXT_PUBLIC_SITE_URL`, e refaça o deploy.
+(`/admin` → *Remover exemplos*), configure o domínio e `NEXT_PUBLIC_SITE_URL`, e refaça o deploy
+(a trava, a marca d'água e a faixa saem sozinhas).
 
 ## Deploy (Vercel)
 
