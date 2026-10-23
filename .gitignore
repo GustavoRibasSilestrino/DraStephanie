@@ -49,3 +49,6 @@ ACESSO-ADMIN.txt
 
 # local
 .claude/
+
+.vercel
+.env*.local

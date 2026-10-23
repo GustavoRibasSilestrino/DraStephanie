@@ -5,6 +5,14 @@
  * Fontes: Instagram @dra_stephaniedeoliveira e perfil público da Dra. no Ident.
  */
 
+function siteUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
+  const vercel =
+    process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const raw = explicit || (vercel ? `https://${vercel}` : "http://localhost:3000");
+  return raw.replace(/\/$/, "");
+}
+
 export const site = {
   name: "Dra. Stephanie de Oliveira",
   shortName: "Dra. Stephanie",
@@ -34,11 +42,8 @@ export const site = {
   /** E-mail para receber aviso de novos agendamentos (opcional). */
   notifyEmail: process.env.NOTIFY_EMAIL ?? "",
 
-  /** URL pública do site (SEO, links nos e-mails). */
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://drastephanie.vercel.app").replace(
-    /\/$/,
-    "",
-  ),
+  /** URL pública do site (SEO, links nos e-mails): NEXT_PUBLIC_SITE_URL > domínio da Vercel > local. */
+  url: siteUrl(),
 
   /** Foto de perfil (medalhões) e retrato em alta resolução (molduras grandes). Ver lib/photo.ts */
   photoPath: "/images/dra-stephanie.jpg",
