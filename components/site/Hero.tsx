@@ -2,21 +2,26 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useScroll, useTransform, type Variants } from "motion/react";
 import { Button } from "@/components/ui/Button";
 import { Butterfly, WhatsAppIcon } from "@/components/ui/Icons";
 import { Counter, EASE, SplitWords } from "@/components/ui/Motion";
-import { useSplashDone } from "./Splash";
 import HeroArt from "./HeroArt";
+import { heroBaseDelay } from "./splash-timing";
 import { shortDate } from "@/lib/datetime";
 import type { Photos } from "@/lib/photo";
 import { site, whatsappLink } from "@/lib/site";
 
-const container: Variants = {
-  hide: {},
-  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
-};
+/**
+ * Entrada do herói.
+ *
+ * TODAS as animações partem do mesmo estado ("hide") e rodam sozinhas desde a montagem
+ * ("show"), cada uma com o seu atraso — somado a `base`, o tempo da abertura animada
+ * (0 quando ela é pulada). Nada depende de uma mudança de estado depois do carregamento,
+ * o que deixava o título e a arte presos "escondidos" em alguns carregamentos.
+ */
+
 const rise: Variants = {
   hide: { opacity: 0, y: 26 },
   show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE } },
@@ -24,7 +29,7 @@ const rise: Variants = {
 
 type Slot = { date: string; time: string } | null;
 
-function NextSlotCard({ play }: { play: boolean }) {
+function NextSlotCard({ variants }: { variants: Variants }) {
   const [slot, setSlot] = useState<Slot | undefined>(undefined);
 
   useEffect(() => {
@@ -40,9 +45,7 @@ function NextSlotCard({ play }: { play: boolean }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.94 }}
-      animate={play ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 30, scale: 0.94 }}
-      transition={{ duration: 0.9, delay: 1.5, ease: EASE }}
+      variants={variants}
       className="absolute -left-2 bottom-10 z-20 sm:-left-6 xl:-left-14"
     >
       <div className="animate-float-slow">
@@ -81,28 +84,68 @@ function NextSlotCard({ play }: { play: boolean }) {
 }
 
 export default function Hero({ photos }: { photos: Photos }) {
-  const ready = useSplashDone();
-  const state = ready ? "show" : "hide";
+  // atraso inicial (tempo da abertura); calculado uma vez, na montagem
+  const [base] = useState(heroBaseDelay);
 
-  // Rede de segurança: se alguma animação de entrada ainda estiver pendente 3 s depois
-  // (ex.: navegador sem quadros de animação em abas ocultas/sem foco), conclui à força
+  const v = useMemo(
+    () => ({
+      text: {
+        hide: {},
+        show: { transition: { staggerChildren: 0.12, delayChildren: base + 0.05 } },
+      } as Variants,
+      art: { hide: {}, show: {} } as Variants,
+      arch: {
+        hide: { opacity: 0, scale: 0.92, y: 40 },
+        show: { opacity: 1, scale: 1, y: 0, transition: { duration: 1.3, delay: base + 0.2, ease: EASE } },
+      } as Variants,
+      slot: {
+        hide: { opacity: 0, y: 30, scale: 0.94 },
+        show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.9, delay: base + 1.5, ease: EASE } },
+      } as Variants,
+      bubble: {
+        hide: { opacity: 0, scale: 0.6, rotate: -8 },
+        show: {
+          opacity: 1,
+          scale: 1,
+          rotate: 0,
+          transition: { type: "spring", stiffness: 140, damping: 16, delay: base + 1.2 },
+        },
+      } as Variants,
+      badge: {
+        hide: { opacity: 0, y: -24, scale: 0.94 },
+        show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.9, delay: base + 1.8, ease: EASE } },
+      } as Variants,
+    }),
+    [base],
+  );
+
+  // Rede de segurança: se alguma animação de entrada ainda estiver pendente alguns
+  // segundos depois (ex.: navegador que não gera quadros de animação), conclui à força
   // para o herói nunca ficar "em branco".
   useEffect(() => {
-    if (!ready) return;
-    const t = setTimeout(() => {
-      for (const a of document.getAnimations()) {
-        try {
-          const timing = a.effect?.getTiming();
-          if (a.timeline === document.timeline && a.playState === "running" && timing && Number.isFinite(Number(timing.iterations))) {
-            a.finish();
+    const t = setTimeout(
+      () => {
+        for (const a of document.getAnimations()) {
+          try {
+            const timing = a.effect?.getTiming();
+            if (
+              a.timeline === document.timeline &&
+              a.playState === "running" &&
+              timing &&
+              Number.isFinite(Number(timing.iterations))
+            ) {
+              a.finish();
+            }
+          } catch {
+            /* animação infinita ou já encerrada */
           }
-        } catch {
-          /* animação infinita ou já encerrada */
         }
-      }
-    }, 3000);
+      },
+      (base + 3.5) * 1000,
+    );
     return () => clearTimeout(t);
-  }, [ready]);
+  }, [base]);
+
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const yArt = useTransform(scrollYProgress, [0, 1], [0, 110]);
@@ -123,7 +166,7 @@ export default function Hero({ photos }: { photos: Photos }) {
       <div className="relative mx-auto grid w-full max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-8">
         {/* texto */}
         <motion.div style={{ y: yText, opacity: fade }}>
-          <motion.div variants={container} initial="hide" animate={state}>
+          <motion.div variants={v.text} initial="hide" animate="show">
             <motion.div
               variants={rise}
               className="mb-7 inline-flex items-center gap-3 rounded-full border border-gold-400/30 bg-white/[0.04] py-2 pl-3 pr-4 text-[0.64rem] uppercase tracking-[0.14em] text-gold-200 backdrop-blur sm:pr-5 sm:text-[0.72rem] sm:tracking-[0.26em]"
@@ -134,8 +177,6 @@ export default function Hero({ photos }: { photos: Photos }) {
 
             <h1 className="font-display text-[2.41rem] font-normal leading-[1.12] tracking-[-0.03em] text-balance sm:text-[3.38rem] lg:text-[4.1rem]">
               <SplitWords
-                play={ready}
-                stagger={0.09}
                 parts={[
                   { text: "Odontologia que" },
                   { text: "valoriza", className: "" },
@@ -206,88 +247,81 @@ export default function Hero({ photos }: { photos: Photos }) {
 
         {/* arte */}
         <motion.div style={{ y: yArt }} className="relative mx-auto w-full max-w-[460px] lg:max-w-none">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 40 }}
-            animate={ready ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.92, y: 40 }}
-            transition={{ duration: 1.3, delay: 0.2, ease: EASE }}
-            className="relative mx-auto aspect-[4/5] w-full max-w-[440px]"
-          >
-            {/* moldura deslocada */}
-            <div aria-hidden className="absolute inset-0 translate-x-5 translate-y-5 rounded-t-[999px] rounded-b-[36px] border border-gold-400/35" />
-            <div aria-hidden className="absolute -inset-5 animate-spin-slow rounded-full border border-dashed border-gold-400/20" />
+          <motion.div variants={v.art} initial="hide" animate="show">
+            <motion.div variants={v.arch} className="relative mx-auto aspect-[4/5] w-full max-w-[440px]">
+              {/* moldura deslocada */}
+              <div aria-hidden className="absolute inset-0 translate-x-5 translate-y-5 rounded-t-[999px] rounded-b-[36px] border border-gold-400/35" />
+              <div aria-hidden className="absolute -inset-5 animate-spin-slow rounded-full border border-dashed border-gold-400/20" />
 
-            <div className="relative h-full w-full overflow-hidden rounded-t-[999px] rounded-b-[36px] border border-gold-300/30 bg-gradient-to-b from-navy-700 via-navy-800 to-navy-900 shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85)]">
-              {photos.portrait ? (
-                <>
-                  <Image
-                    src={photos.portrait}
-                    alt={`${site.name}, cirurgiã-dentista em ${site.city}`}
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 440px, 90vw"
-                    className="object-cover object-top"
-                  />
-                  <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent" />
-                </>
-              ) : (
-                <>
-                  <div aria-hidden className="pattern-geo absolute inset-0 opacity-70" />
-                  <HeroArt play={ready} />
-                </>
-              )}
-            </div>
+              <div className="relative h-full w-full overflow-hidden rounded-t-[999px] rounded-b-[36px] border border-gold-300/30 bg-gradient-to-b from-navy-700 via-navy-800 to-navy-900 shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85)]">
+                {photos.portrait ? (
+                  <>
+                    <Image
+                      src={photos.portrait}
+                      alt={`${site.name}, cirurgiã-dentista em ${site.city}`}
+                      fill
+                      priority
+                      sizes="(min-width: 1024px) 440px, 90vw"
+                      className="object-cover object-top"
+                    />
+                    <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent" />
+                  </>
+                ) : (
+                  <>
+                    <div aria-hidden className="pattern-geo absolute inset-0 opacity-70" />
+                    <HeroArt base={base} />
+                  </>
+                )}
+              </div>
 
-            {/* cartões flutuantes */}
-            <NextSlotCard play={ready} />
-            {photos.avatar && !photos.portrait ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
-                animate={ready ? { opacity: 1, scale: 1, rotate: 0 } : { opacity: 0, scale: 0.6, rotate: -8 }}
-                transition={{ type: "spring", stiffness: 140, damping: 16, delay: 1.2 }}
-                className="absolute -right-3 top-4 z-20 sm:-right-5 sm:top-8 xl:-right-12"
-              >
-                <div className="animate-float">
-                  <div className="relative">
-                    {/* anel dourado que gira */}
-                    <span aria-hidden className="absolute -inset-2 animate-spin-slow rounded-full border border-dashed border-gold-300/60" />
-                    <span className="relative block h-[7rem] w-[7rem] overflow-hidden rounded-full border-[3px] border-gold-300 shadow-[0_24px_50px_-14px_rgba(0,0,0,0.8)] sm:h-[9.25rem] sm:w-[9.25rem]">
-                      <Image
-                        src={photos.avatar}
-                        alt={`${site.name}, cirurgiã-dentista`}
-                        fill
-                        priority
-                        sizes="150px"
-                        className="object-cover"
-                      />
-                    </span>
-                    <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-gold-300/40 bg-navy-900/90 px-3.5 py-1.5 text-[0.62rem] font-medium uppercase tracking-[0.2em] text-gold-200 shadow-lg backdrop-blur sm:text-[0.66rem]">
-                      Dra. Stephanie
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ) : !photos.portrait ? (
-              <motion.div
-                initial={{ opacity: 0, y: -24, scale: 0.94 }}
-                animate={ready ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: -24, scale: 0.94 }}
-                transition={{ duration: 0.9, delay: 1.8, ease: EASE }}
-                className="absolute -right-2 top-14 z-20 sm:-right-4 xl:-right-12"
-              >
-                <div className="animate-float">
-                  <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl">
-                    <Butterfly className="h-8 w-8 text-gold-300" />
-                    <span className="leading-tight">
-                      <span className="block text-[0.66rem] uppercase tracking-[0.22em] text-gold-200/80">
-                        Especialista em
+              {/* cartões flutuantes */}
+              <NextSlotCard variants={v.slot} />
+              {photos.avatar && !photos.portrait ? (
+                <motion.div
+                  variants={v.bubble}
+                  className="absolute -right-3 top-4 z-20 sm:-right-5 sm:top-8 xl:-right-12"
+                >
+                  <div className="animate-float">
+                    <div className="relative">
+                      {/* anel dourado que gira */}
+                      <span aria-hidden className="absolute -inset-2 animate-spin-slow rounded-full border border-dashed border-gold-300/60" />
+                      <span className="relative block h-[7rem] w-[7rem] overflow-hidden rounded-full border-[3px] border-gold-300 shadow-[0_24px_50px_-14px_rgba(0,0,0,0.8)] sm:h-[9.25rem] sm:w-[9.25rem]">
+                        <Image
+                          src={photos.avatar}
+                          alt={`${site.name}, cirurgiã-dentista`}
+                          fill
+                          priority
+                          sizes="150px"
+                          className="object-cover"
+                        />
                       </span>
-                      <span className="block font-display text-[0.95rem] font-medium text-ivory-50">
-                        Endodontia & Prótese
+                      <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-gold-300/40 bg-navy-900/90 px-3.5 py-1.5 text-[0.62rem] font-medium uppercase tracking-[0.2em] text-gold-200 shadow-lg backdrop-blur sm:text-[0.66rem]">
+                        Dra. Stephanie
                       </span>
-                    </span>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ) : null}
+                </motion.div>
+              ) : !photos.portrait ? (
+                <motion.div
+                  variants={v.badge}
+                  className="absolute -right-2 top-14 z-20 sm:-right-4 xl:-right-12"
+                >
+                  <div className="animate-float">
+                    <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+                      <Butterfly className="h-8 w-8 text-gold-300" />
+                      <span className="leading-tight">
+                        <span className="block text-[0.66rem] uppercase tracking-[0.22em] text-gold-200/80">
+                          Especialista em
+                        </span>
+                        <span className="block font-display text-[0.95rem] font-medium text-ivory-50">
+                          Endodontia & Prótese
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : null}
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>
@@ -296,8 +330,8 @@ export default function Hero({ photos }: { photos: Photos }) {
       <motion.div
         aria-hidden
         initial={{ opacity: 0 }}
-        animate={ready ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ delay: 2.4, duration: 1 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: base + 2.4, duration: 1 }}
         className="absolute bottom-24 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[0.64rem] uppercase tracking-[0.36em] text-gold-200/70 2xl:flex"
       >
         Role

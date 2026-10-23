@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useMemo } from "react";
+import { motion, type Variants } from "motion/react";
 import { TOOTH_PATH } from "@/components/ui/Icons";
 
 const STARS = [
@@ -11,9 +12,56 @@ const STARS = [
   { x: 214, y: 44, s: 0.5, d: 1.2 },
 ];
 
-/** Dente em traço dourado que se desenha sozinho — ilustração do herói. */
-export default function HeroArt({ play }: { play: boolean }) {
-  const t = play ? "show" : "hide";
+const draw = (duration: number, delay: number, extra: Record<string, number> = {}): Variants => ({
+  hide: { pathLength: 0, ...Object.fromEntries(Object.keys(extra).map((k) => [k, 0])) },
+  show: { pathLength: 1, ...extra, transition: { duration, delay, ease: [0.65, 0, 0.35, 1] } },
+});
+
+const fade = (duration: number, delay: number): Variants => ({
+  hide: { opacity: 0 },
+  show: { opacity: 1, transition: { duration, delay } },
+});
+
+/**
+ * Dente em traço dourado que se desenha sozinho — ilustração do herói.
+ *
+ * Não tem estado próprio: todos os elementos herdam os rótulos "hide"/"show" do pai
+ * (o container da arte no Hero) e usam `base` como atraso inicial (tempo da abertura).
+ */
+export default function HeroArt({ base }: { base: number }) {
+  const v = useMemo(
+    () => ({
+      glow: {
+        hide: { opacity: 0, scale: 0.7 },
+        show: { opacity: 1, scale: 1, transition: { duration: 1.6, delay: base, ease: "easeOut" } },
+      } as Variants,
+      fill: fade(1.4, base + 1.6),
+      outline: draw(2.4, base + 0.1),
+      shine: draw(1, base + 2.1, { opacity: 0.85 }),
+      canalL: draw(1, base + 2.3),
+      canalR: draw(1, base + 2.4),
+      smile1: draw(1.6, base + 1.2),
+      smile2: draw(1.6, base + 1.5),
+      stars: STARS.map(
+        (s): Variants => ({
+          hide: { opacity: 0, scale: 0 },
+          show: {
+            opacity: [0, 1, 0.35, 1, 0],
+            scale: [0, 1, 0.8, 1.1, 0],
+            transition: {
+              duration: 4,
+              delay: base + 2 + s.d,
+              repeat: Infinity,
+              repeatDelay: 1.2,
+              ease: "easeInOut",
+            },
+          },
+        }),
+      ),
+    }),
+    [base],
+  );
+
   return (
     <svg viewBox="0 0 400 500" className="h-full w-full" fill="none" aria-hidden>
       <defs>
@@ -37,9 +85,7 @@ export default function HeroArt({ play }: { play: boolean }) {
         cy="226"
         r="168"
         fill="url(#tooth-glow)"
-        initial={{ opacity: 0, scale: 0.7 }}
-        animate={play ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.7 }}
-        transition={{ duration: 1.6, ease: "easeOut" }}
+        variants={v.glow}
         style={{ transformOrigin: "200px 226px" }}
       />
 
@@ -52,23 +98,14 @@ export default function HeroArt({ play }: { play: boolean }) {
 
       {/* o dente */}
       <g transform="translate(62 72) scale(4.35)">
-        <motion.path
-          d={TOOTH_PATH}
-          fill="url(#tooth-fill)"
-          stroke="none"
-          initial={{ opacity: 0 }}
-          animate={play ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 1.4, delay: 1.6 }}
-        />
+        <motion.path d={TOOTH_PATH} fill="url(#tooth-fill)" stroke="none" variants={v.fill} />
         <motion.path
           d={TOOTH_PATH}
           stroke="url(#gold-stroke)"
           strokeWidth={0.55}
           strokeLinecap="round"
           strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={play ? { pathLength: 1 } : { pathLength: 0 }}
-          transition={{ duration: 2.4, delay: 0.1, ease: [0.65, 0, 0.35, 1] }}
+          variants={v.outline}
         />
         {/* brilho */}
         <motion.path
@@ -76,9 +113,7 @@ export default function HeroArt({ play }: { play: boolean }) {
           stroke="#fff6dc"
           strokeWidth={0.7}
           strokeLinecap="round"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={play ? { pathLength: 1, opacity: 0.85 } : { pathLength: 0, opacity: 0 }}
-          transition={{ duration: 1, delay: 2.1 }}
+          variants={v.shine}
         />
         <motion.path
           d="M24.5 31C24 36 24.2 40 24.8 44"
@@ -86,9 +121,7 @@ export default function HeroArt({ play }: { play: boolean }) {
           strokeOpacity={0.5}
           strokeWidth={0.35}
           strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={play ? { pathLength: 1 } : { pathLength: 0 }}
-          transition={{ duration: 1, delay: 2.3 }}
+          variants={v.canalL}
         />
         <motion.path
           d="M39.5 31C40 36 39.8 40 39.2 44"
@@ -96,9 +129,7 @@ export default function HeroArt({ play }: { play: boolean }) {
           strokeOpacity={0.5}
           strokeWidth={0.35}
           strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={play ? { pathLength: 1 } : { pathLength: 0 }}
-          transition={{ duration: 1, delay: 2.4 }}
+          variants={v.canalR}
         />
       </g>
 
@@ -108,9 +139,7 @@ export default function HeroArt({ play }: { play: boolean }) {
         stroke="url(#gold-stroke)"
         strokeWidth={2}
         strokeLinecap="round"
-        initial={{ pathLength: 0 }}
-        animate={t === "show" ? { pathLength: 1 } : { pathLength: 0 }}
-        transition={{ duration: 1.6, delay: 1.2, ease: "easeInOut" }}
+        variants={v.smile1}
       />
       <motion.path
         d="M130 424Q200 462 270 424"
@@ -118,26 +147,13 @@ export default function HeroArt({ play }: { play: boolean }) {
         strokeOpacity={0.4}
         strokeWidth={1}
         strokeLinecap="round"
-        initial={{ pathLength: 0 }}
-        animate={t === "show" ? { pathLength: 1 } : { pathLength: 0 }}
-        transition={{ duration: 1.6, delay: 1.5, ease: "easeInOut" }}
+        variants={v.smile2}
       />
 
       {/* brilhos que piscam */}
       {STARS.map((s, i) => (
         <g key={i} transform={`translate(${s.x} ${s.y}) scale(${s.s})`}>
-          <motion.g
-            initial={{ opacity: 0, scale: 0 }}
-            animate={play ? { opacity: [0, 1, 0.35, 1, 0], scale: [0, 1, 0.8, 1.1, 0] } : { opacity: 0 }}
-            transition={{
-              duration: 4,
-              delay: 2 + s.d,
-              repeat: Infinity,
-              repeatDelay: 1.2,
-              ease: "easeInOut",
-            }}
-            style={{ transformOrigin: "0px 0px" }}
-          >
+          <motion.g variants={v.stars[i]} style={{ transformOrigin: "0px 0px" }}>
             <path d="M0 -12C1 -4 4 -1 12 0C4 1 1 4 0 12C-1 4 -4 1 -12 0C-4 -1 -1 -4 0 -12Z" fill="#f6e9c4" />
           </motion.g>
         </g>

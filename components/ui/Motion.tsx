@@ -1,7 +1,7 @@
 "use client";
 
 import { Children, cloneElement, isValidElement, useEffect, useRef, type ReactElement, type ReactNode } from "react";
-import { animate, motion, useInView, useMotionValue, useTransform } from "motion/react";
+import { animate, motion, useInView, useMotionValue, useTransform, type Variants } from "motion/react";
 
 export const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -99,28 +99,31 @@ export interface WordPart {
   className?: string;
 }
 
-/** Título que sobe palavra por palavra, com máscara (efeito de revista). */
+const wordVariants: Variants = {
+  hide: { y: "115%" },
+  show: (d: number) => ({ y: "0%", transition: { duration: 1, delay: d, ease: EASE } }),
+};
+
+/**
+ * Título que sobe palavra por palavra, com máscara (efeito de revista).
+ *
+ * Por padrão as palavras HERDAM os rótulos "hide"/"show" do elemento pai (que decide
+ * quando começar e escalona as palavras). Com `inView`, animam sozinhas ao entrar na tela.
+ */
 export function SplitWords({
   parts,
   delay = 0,
   stagger = 0.07,
   className,
   inView = false,
-  play = true,
 }: {
   parts: WordPart[];
   delay?: number;
   stagger?: number;
   className?: string;
-  /** anima ao entrar na tela (em vez de ao montar) */
   inView?: boolean;
-  /** false = segura a animação (ex.: enquanto a abertura do site roda) */
-  play?: boolean;
 }) {
   let i = 0;
-  const trigger = inView
-    ? { whileInView: { y: "0%" }, viewport: { once: true, amount: 0.6 } }
-    : { animate: { y: play ? "0%" : "115%" } };
   return (
     <span className={className}>
       {parts.map((part, pi) =>
@@ -135,9 +138,11 @@ export function SplitWords({
             >
               <motion.span
                 className={`inline-block ${part.className ?? ""}`}
-                initial={{ y: "115%" }}
-                {...trigger}
-                transition={{ duration: 1, delay: delay + idx * stagger, ease: EASE }}
+                variants={wordVariants}
+                custom={inView ? delay + idx * stagger : 0}
+                {...(inView
+                  ? { initial: "hide", whileInView: "show", viewport: { once: true, amount: 0.6 } }
+                  : {})}
               >
                 {word}&nbsp;
               </motion.span>

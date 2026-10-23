@@ -4,12 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { BUTTERFLY_PATHS } from "@/components/ui/Icons";
 import { site } from "@/lib/site";
-
-declare global {
-  interface Window {
-    __splashDone?: boolean;
-  }
-}
+import "./splash-types";
 
 /**
  * Abertura elegante: a borboleta da marca se desenha em dourado e a cortina
@@ -43,9 +38,17 @@ export default function Splash() {
       setVisible(false);
       document.body.style.overflow = "";
     }, 2150);
+    // Rede de segurança: se a animação de saída da cortina não completar (navegador sem
+    // quadros de animação), remove a abertura à força para ela nunca cobrir o site.
+    const t3 = setTimeout(() => {
+      const el = document.getElementById("splash");
+      if (el) el.style.display = "none";
+      document.body.style.overflow = "";
+    }, 4200);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      clearTimeout(t3);
       document.body.style.overflow = "";
     };
   }, []);
@@ -102,26 +105,3 @@ export default function Splash() {
   );
 }
 
-/**
- * true quando a abertura terminou (ou não precisa acontecer).
- *
- * Quando a abertura é pulada (visita repetida), a virada para true é adiada por
- * um instante, para o herói não começar a animar no mesmo tick da hidratação.
- */
-export function useSplashDone(): boolean {
-  const [done, setDone] = useState(false);
-  useEffect(() => {
-    const skip =
-      window.__splashDone ||
-      document.documentElement.getAttribute("data-splash") === "skip" ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (skip) {
-      const t = setTimeout(() => setDone(true), 120);
-      return () => clearTimeout(t);
-    }
-    const on = () => setDone(true);
-    window.addEventListener("splash-done", on);
-    return () => window.removeEventListener("splash-done", on);
-  }, []);
-  return done;
-}
