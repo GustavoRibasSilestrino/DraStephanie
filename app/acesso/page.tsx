@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true },
 };
 
-export default async function AccessPage({ searchParams }: { searchParams: Promise<{ voltar?: string }> }) {
-  const { voltar } = await searchParams;
-  return <AccessForm next={safeNext(voltar)} />;
+export default async function AccessPage({ searchParams }: { searchParams: Promise<{ voltar?: string; codigo?: string }> }) {
+  const { voltar, codigo } = await searchParams;
+  return <AccessForm next={safeNext(voltar)} initialCode={codigo?.slice(0, 60)} />;
 }

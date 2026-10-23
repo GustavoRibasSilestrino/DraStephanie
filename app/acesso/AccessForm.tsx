@@ -1,23 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/Button";
 import { Butterfly } from "@/components/ui/Icons";
 import { TextInput } from "@/components/ui/Field";
 import { api } from "@/lib/client-api";
 
-export default function AccessForm({ next }: { next: string }) {
-  const [code, setCode] = useState("");
+export default function AccessForm({ next, initialCode }: { next: string; initialCode?: string }) {
+  const [code, setCode] = useState(initialCode ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!code.trim()) return setError("Digite o código de acesso.");
+  const enter = async (value: string) => {
+    if (!value.trim()) return setError("Digite o código de acesso.");
     setBusy(true);
     setError("");
-    const r = await api("/api/acesso", { body: { code } });
+    const r = await api("/api/acesso", { body: { code: value } });
     if (!r.ok) {
       setBusy(false);
       setError(r.error.message);
@@ -26,6 +25,21 @@ export default function AccessForm({ next }: { next: string }) {
     // navegação completa: o servidor precisa enxergar o cookie recém-criado
     window.location.assign(next);
   };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    enter(code);
+  };
+
+  // Link mágico (/acesso?codigo=...): entra sozinho, sem digitar
+  const auto = useRef(false);
+  useEffect(() => {
+    if (initialCode && !auto.current) {
+      auto.current = true;
+      enter(initialCode);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <main className="pattern-geo relative grid min-h-dvh place-items-center overflow-hidden bg-navy-950 px-4 py-10">
