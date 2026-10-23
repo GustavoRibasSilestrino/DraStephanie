@@ -160,12 +160,15 @@ export function Counter({
   prefix = "",
   suffix = "",
   duration = 2.2,
+  delay = 0,
   className,
 }: {
   to: number;
   prefix?: string;
   suffix?: string;
   duration?: number;
+  /** espera (em segundos) antes de começar a contar — útil quando o bloco entra com atraso */
+  delay?: number;
   className?: string;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -175,14 +178,29 @@ export function Counter({
 
   useEffect(() => {
     if (!inView) return;
-    const controls = animate(value, to, { duration, ease: EASE });
+    const controls = animate(value, to, { duration, delay, ease: EASE });
     // garante o valor final mesmo se o navegador não gerar quadros de animação
-    const t = setTimeout(() => value.set(to), (duration + 1.2) * 1000);
+    const t = setTimeout(() => value.set(to), (delay + duration + 1.2) * 1000);
     return () => {
       controls.stop();
       clearTimeout(t);
     };
-  }, [inView, to, duration, value]);
+  }, [inView, to, duration, delay, value]);
+
+  // Se o aviso de "entrou na tela" nunca chegar (navegador sem quadros de renderização),
+  // mas o número já está visível e ainda em zero, mostra o valor final.
+  useEffect(() => {
+    const t = setTimeout(
+      () => {
+        const el = ref.current;
+        if (!el || value.get() !== 0) return;
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight && r.bottom > 0) value.set(to);
+      },
+      (delay + duration + 2.5) * 1000,
+    );
+    return () => clearTimeout(t);
+  }, [to, duration, delay, value]);
 
   return (
     <span ref={ref} className={className}>

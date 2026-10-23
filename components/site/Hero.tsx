@@ -219,14 +219,14 @@ export default function Hero({ photos }: { photos: Photos }) {
               <div>
                 <dt className="sr-only">Experiência</dt>
                 <dd className="font-display text-[1.87rem] font-normal leading-none text-gold-gradient">
-                  <Counter to={10} prefix="+" />
+                  <Counter to={10} prefix="+" delay={base + 1} />
                 </dd>
                 <p className="mt-2 text-[0.82rem] leading-snug text-ivory-200/70">anos de experiência</p>
               </div>
               <div>
                 <dt className="sr-only">Especializações</dt>
                 <dd className="font-display text-[1.87rem] font-normal leading-none text-gold-gradient">
-                  <Counter to={2} />
+                  <Counter to={2} delay={base + 1} />
                 </dd>
                 <p className="mt-2 text-[0.82rem] leading-snug text-ivory-200/70">
                   especializações: endodontia e prótese
